@@ -1,6 +1,5 @@
 package no.utgdev.jdbcdsl;
 
-import io.vavr.Tuple2;
 import no.utgdev.jdbcdsl.value.FunctionValue;
 import no.utgdev.jdbcdsl.value.Value;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.joining;
 
-public class InsertBatchQuery<T> {
+public class InsertBatchQuery<T> implements DatachangeingQuery<InsertBatchQuery<T>> {
     private final Jdbi db;
     private final String tableName;
     private final Map<String, Value> values;
@@ -28,8 +27,16 @@ public class InsertBatchQuery<T> {
         this.values = new LinkedHashMap<>();
     }
 
-    public InsertBatchQuery<T> add(String param, Function<T, Object> paramValue, Class type) {
-        return this.add(param, new FunctionValue(type, paramValue));
+    public InsertBatchQuery<T> set(String param, Object paramValue) {
+        if (paramValue.getClass().isAssignableFrom(Function.class)) {
+            return this.add(param, (Function<T, Object>)paramValue);
+        } else {
+            return this.add(param, (ignore) -> paramValue);
+        }
+    }
+
+    public InsertBatchQuery<T> add(String param, Function<T, Object> paramValue) {
+        return this.add(param, new FunctionValue( paramValue));
     }
 
     public InsertBatchQuery<T> add(String param, DbConstants value) {
@@ -58,9 +65,9 @@ public class InsertBatchQuery<T> {
                 for (Value param : values.values()) {
                     if (param instanceof FunctionValue) {
                         FunctionValue<T> functionValue = (FunctionValue) param;
-                        Tuple2<Class, Function<T, Object>> config = functionValue.getSql();
+                        Function<T, Object> config = functionValue.getSql();
 
-                        batch.bind(j++, config._2.apply(t));
+                        batch.bind(j++, config.apply(t));
                     }
                 }
 

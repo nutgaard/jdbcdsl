@@ -8,7 +8,7 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.Value;
-import no.utgdev.jdbcdsl.SelectQuery;
+import no.utgdev.jdbcdsl.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -38,6 +38,16 @@ public class QueryMapping<T extends SqlRecord> {
         }
 
         return (QueryMapping<T>) mappers.get(targetClass).getOrNull();
+    }
+
+    public UpdateBatchQuery<T> applyColumn(UpdateBatchQuery<T> query) {
+        columns.forEach((column) -> query.add(column.name, t -> Try.of(() -> column.field.get(t)).get()));
+        return query;
+    }
+
+    public <Q extends DatachangeingQuery> Q applyColumn(Q query, T record) {
+        columns.forEach((column) -> query.set(column.name, Try.of(() -> column.field.get(record)).get()));
+        return query;
     }
 
     public SelectQuery<T> applyColumn(SelectQuery<T> query) {
@@ -75,7 +85,7 @@ public class QueryMapping<T extends SqlRecord> {
                     Type[] genericTypes = ((ParameterizedType) field.getAnnotatedType().getType()).getActualTypeArguments();
                     Class from = ((Class) genericTypes[0]);
                     Class to = ((Class) genericTypes[1]);
-                    return new InternalColumn(name, from, to);
+                    return new InternalColumn(name, field, from, to);
                 });
 
         verifyAllMappingAreDefined(columns);
@@ -167,6 +177,7 @@ public class QueryMapping<T extends SqlRecord> {
     @Value(staticConstructor = "of")
     static class InternalColumn<FROM, TO> {
         public String name;
+        public Field field;
         public Class<FROM> from;
         public Class<TO> to;
     }

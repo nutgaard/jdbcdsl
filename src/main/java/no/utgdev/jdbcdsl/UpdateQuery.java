@@ -10,7 +10,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-public class UpdateQuery {
+public class UpdateQuery implements DatachangeingQuery<UpdateQuery> {
     private final Jdbi db;
     private final String tableName;
     private final Map<String, Value> setParams;

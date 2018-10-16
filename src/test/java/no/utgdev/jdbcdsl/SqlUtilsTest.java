@@ -133,7 +133,7 @@ public class SqlUtilsTest {
         updateObjects.add(getTestobjectWithId("007").setNavn(oppdatertNavn));
 
         updateBatchQuery
-                .add(NAVN, Testobject::getNavn, String.class)
+                .add(NAVN, Testobject::getNavn)
                 .addWhereClause(object -> WhereClause.equals(ID, object.getId())).execute(updateObjects);
 
         List<Testobject> retrieved = Testobject.getSelectQuery(db, TESTTABLE1)
@@ -414,8 +414,8 @@ public class SqlUtilsTest {
     public void batchInsertWithCurrentTimestamp() {
         InsertBatchQuery<Testobject> insertBatchQuery = new InsertBatchQuery<>(db, TESTTABLE1);
         insertBatchQuery
-                .add(ID, Testobject::getId, String.class)
-                .add(NAVN, Testobject::getNavn, String.class)
+                .add(ID, Testobject::getId)
+                .add(NAVN, Testobject::getNavn)
                 .add(BIRTHDAY, DbConstants.CURRENT_TIMESTAMP);
 
         List<Testobject> objects = new ArrayList<>();
@@ -433,9 +433,9 @@ public class SqlUtilsTest {
     public void batchUpdateWithCurrentTimestamp() {
         InsertBatchQuery<Testobject> insertBatchQuery = new InsertBatchQuery<>(db, TESTTABLE1);
         insertBatchQuery
-                .add(ID, Testobject::getId, String.class)
-                .add(NAVN, Testobject::getNavn, String.class)
-                .add(BIRTHDAY, Testobject::getBirthday, Timestamp.class);
+                .add(ID, Testobject::getId)
+                .add(NAVN, Testobject::getNavn)
+                .add(BIRTHDAY, Testobject::getBirthday);
 
         List<Testobject> objects = new ArrayList<>();
         objects.add(getTestobjectWithId("001"));

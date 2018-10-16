@@ -1,6 +1,5 @@
 package no.utgdev.jdbcdsl;
 
-import io.vavr.Tuple2;
 import no.utgdev.jdbcdsl.value.FunctionValue;
 import no.utgdev.jdbcdsl.value.Value;
 import no.utgdev.jdbcdsl.where.WhereClause;
@@ -31,15 +30,15 @@ public class UpdateBatchQuery<T> {
         this.setParams = new LinkedHashMap<>();
     }
 
-    public UpdateBatchQuery<T> add(String param, Function<T, Object> paramValue, Class type) {
-        return this.add(param, new FunctionValue<>(type, paramValue));
+    public UpdateBatchQuery<T> add(String param, Function<T, Object> paramValue) {
+        return this.add(param, new FunctionValue<>(paramValue));
     }
 
     public UpdateBatchQuery<T> add(String param, DbConstants value) {
         return this.add(param, Value.of(value));
     }
 
-    public UpdateBatchQuery<T> add(String param, Value value) {
+    UpdateBatchQuery<T> add(String param, Value value) {
         if (this.setParams.containsKey(param)) {
             throw new IllegalArgumentException(String.format("Param[%s] was already set.", param));
         }
@@ -83,9 +82,9 @@ public class UpdateBatchQuery<T> {
                 for (Value param : setParams.values()) {
                     if (param instanceof FunctionValue) {
                         FunctionValue<T> funcValue = (FunctionValue) param;
-                        Tuple2<Class, Function<T, Object>> config = funcValue.getSql();
+                        Function<T, Object> config = funcValue.getSql();
 
-                        batch.bind(j++, config._2.apply(t));
+                        batch.bind(j++, config.apply(t));
                     }
                 }
                 if (Objects.nonNull(whereClause)) {

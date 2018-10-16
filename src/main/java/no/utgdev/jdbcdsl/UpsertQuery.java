@@ -19,7 +19,7 @@ import static no.utgdev.jdbcdsl.UpsertQuery.ApplyTo.INSERT;
 import static no.utgdev.jdbcdsl.UpsertQuery.ApplyTo.UPDATE;
 
 @Slf4j
-public class UpsertQuery {
+public class UpsertQuery implements DatachangeingQuery<UpsertQuery> {
     private final String upsertTemplate = "MERGE INTO %s USING dual ON (%s) WHEN MATCHED THEN %s WHEN NOT MATCHED THEN %s";
     private final Jdbi db;
     private final String tableName;

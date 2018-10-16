@@ -74,10 +74,10 @@ public class Testobject {
     public static InsertBatchQuery<Testobject> getInsertBatchQuery(Jdbi db, String table) {
         InsertBatchQuery<Testobject> insertBatchQuery = new InsertBatchQuery<>(db, table);
         return insertBatchQuery
-                .add(NAVN, Testobject::getNavn, String.class)
-                .add(DEAD, Testobject::isDead, Boolean.class)
-                .add(ID, Testobject::getId, String.class)
-                .add(BIRTHDAY, Testobject::getBirthday, Timestamp.class)
-                .add(NUMBER_OF_PETS, Testobject::getNumberOfPets, Integer.class);
+                .add(NAVN, Testobject::getNavn)
+                .add(DEAD, Testobject::isDead)
+                .add(ID, Testobject::getId)
+                .add(BIRTHDAY, Testobject::getBirthday)
+                .add(NUMBER_OF_PETS, Testobject::getNumberOfPets);
     }
 }

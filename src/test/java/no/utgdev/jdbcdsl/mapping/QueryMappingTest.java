@@ -124,6 +124,6 @@ public class QueryMappingTest {
     }
 
     static <FROM, TO> QueryMapping.InternalColumn<FROM, TO> column(Class<FROM> fromCls, Class<TO> toCls) {
-        return QueryMapping.InternalColumn.of("name", fromCls, toCls);
+        return QueryMapping.InternalColumn.of("name", null, fromCls, toCls);
     }
 }

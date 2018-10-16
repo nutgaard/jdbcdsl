@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
-public class InsertQuery {
+public class InsertQuery implements DatachangeingQuery<InsertQuery>{
     private final Jdbi db;
     private final String tableName;
     private final Map<String, Value> insertParams;
@@ -20,6 +20,9 @@ public class InsertQuery {
         this.insertParams = new LinkedHashMap<>();
     }
 
+    public InsertQuery set(String columnName, Object value) {
+        return this.value(columnName, value);
+    }
     public InsertQuery value(String columnName, Value value) {
         this.insertParams.put(columnName, value);
         return this;
