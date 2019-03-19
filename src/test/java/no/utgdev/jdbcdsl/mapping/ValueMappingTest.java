@@ -1,12 +1,13 @@
 package no.utgdev.jdbcdsl.mapping;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import static no.utgdev.jdbcdsl.mapping.QueryMappingTest.column;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -19,8 +20,9 @@ public class ValueMappingTest {
         verify(rs).getString("name");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void should_throw_exception_on_unknown_types() {
-        ValueMapping.getValue(column(List.class, null), null);
+        assertThatThrownBy(() -> ValueMapping.getValue(column(List.class, null), null))
+                .isExactlyInstanceOf(RuntimeException.class);
     }
 }

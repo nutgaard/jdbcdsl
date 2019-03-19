@@ -3,7 +3,7 @@ package no.utgdev.jdbcdsl.mapping;
 import lombok.Value;
 import no.utgdev.jdbcdsl.SelectQuery;
 import no.utgdev.jdbcdsl.mapping.QueryMapping.Column;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.sql.Date;
@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -26,29 +27,34 @@ public class QueryMappingTest {
         assertThat(mapper == mapper2).isTrue();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_error_for_non_column_types() {
-        QueryMapping.of(NonSupportedFieldRecord.class);
+        assertThatThrownBy(() -> QueryMapping.of(NonSupportedFieldRecord.class))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_error_for_unknown_mapping() {
-        QueryMapping.of(NonSupportedMappingRecord.class);
+        assertThatThrownBy(() -> QueryMapping.of(NonSupportedMappingRecord.class))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_if_a_matching_constructor_is_not_found() {
-        QueryMapping.of(NoMatchingConstructorRecord.class);
+        assertThatThrownBy(() -> QueryMapping.of(NoMatchingConstructorRecord.class))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_if_a_matching_constructor_is_not_found2() {
-        QueryMapping.of(NoMatchingConstructorRecord2.class);
+        assertThatThrownBy(() -> QueryMapping.of(NoMatchingConstructorRecord2.class))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_if_a_matching_constructor_is_not_found3() {
-        QueryMapping.of(MultipleConstructorRecord.class);
+        assertThatThrownBy(() -> QueryMapping.of(MultipleConstructorRecord.class))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

@@ -4,8 +4,8 @@ import no.utgdev.jdbcdsl.order.OrderClause;
 import no.utgdev.jdbcdsl.where.WhereClause;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.Batch;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class SqlUtilsTest {
 
     private Jdbi db;
 
-    @Before
+    @BeforeEach
     public void setup() {
         db = TestUtils.jdbcTemplate();
         db.useHandle(handle -> {

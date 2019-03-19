@@ -4,14 +4,15 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.utgdev.jdbcdsl.where.WhereClause;
 import org.jdbi.v3.core.Jdbi;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class UpsertQueryTest {
     public final static String TESTTABLE1 = "TESTTABLE1";
@@ -23,7 +24,7 @@ public class UpsertQueryTest {
 
     private Jdbi db;
 
-    @Before
+    @BeforeEach
     public void setup() {
         db = TestUtils.jdbcTemplate();
         db.useHandle(handle -> {
@@ -35,7 +36,7 @@ public class UpsertQueryTest {
                     "  CREATED TIMESTAMP,\n" +
                     "  PRIMARY KEY(ID)\n" +
                     ")")
-                .execute();
+                    .execute();
         });
     }
 
@@ -147,38 +148,46 @@ public class UpsertQueryTest {
         assertThat(retrieved.getId()).isEqualTo(id);
     }
 
-    @Test(expected = SqlUtilsException.class)
+    @Test
     public void failIfWhereClauseIsntSet() {
-        SqlUtils.upsert(db, TESTTABLE1)
-                .set("field2", "")
-                .where(WhereClause.equals("field", ""))
-                .execute();
+        assertThatThrownBy(() ->
+                SqlUtils.upsert(db, TESTTABLE1)
+                        .set("field2", "")
+                        .where(WhereClause.equals("field", ""))
+                        .execute()
+        ).isExactlyInstanceOf(SqlUtilsException.class);
     }
 
-    @Test(expected = SqlUtilsException.class)
+    @Test
     public void failIfWhereClauseIsntSet2() {
-        SqlUtils.upsert(db, TESTTABLE1)
-                .set(ID, "")
-                .set(DEAD, true)
-                .where(WhereClause.equals(ID, "").and(WhereClause.equals(NAVN, "a")))
-                .execute();
+        assertThatThrownBy(() ->
+                SqlUtils.upsert(db, TESTTABLE1)
+                        .set(ID, "")
+                        .set(DEAD, true)
+                        .where(WhereClause.equals(ID, "").and(WhereClause.equals(NAVN, "a")))
+                        .execute()
+        ).isExactlyInstanceOf(SqlUtilsException.class);
     }
 
-    @Test(expected = SqlUtilsException.class)
+    @Test
     public void failIfWhereClauseFieldIsSetToUpdate() {
-        SqlUtils.upsert(db, TESTTABLE1)
-                .set("field", "", UpsertQuery.ApplyTo.UPDATE)
-                .where(WhereClause.equals("field", ""))
-                .execute();
+        assertThatThrownBy(() ->
+                SqlUtils.upsert(db, TESTTABLE1)
+                        .set("field", "", UpsertQuery.ApplyTo.UPDATE)
+                        .where(WhereClause.equals("field", ""))
+                        .execute()
+        ).isExactlyInstanceOf(SqlUtilsException.class);
     }
 
-    @Test(expected = SqlUtilsException.class)
+    @Test
     public void failIfNoFieldsArePresentForUpdate() {
-        SqlUtils.upsert(db, TESTTABLE1)
-                .set(ID, "ID1", UpsertQuery.ApplyTo.INSERT)
-                .set(NAVN, "navn", UpsertQuery.ApplyTo.BOTH)
-                .where(WhereClause.equals(ID, "").and(WhereClause.equals(NAVN, "a")))
-                .execute();
+        assertThatThrownBy(() ->
+                SqlUtils.upsert(db, TESTTABLE1)
+                        .set(ID, "ID1", UpsertQuery.ApplyTo.INSERT)
+                        .set(NAVN, "navn", UpsertQuery.ApplyTo.BOTH)
+                        .where(WhereClause.equals(ID, "").and(WhereClause.equals(NAVN, "a")))
+                        .execute()
+        ).isExactlyInstanceOf(SqlUtilsException.class);
     }
 
     @Test

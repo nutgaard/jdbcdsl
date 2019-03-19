@@ -1,8 +1,8 @@
 package no.utgdev.jdbcdsl.mapping;
 
 import io.vavr.collection.HashMap;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -11,9 +11,10 @@ import java.time.*;
 
 import static no.utgdev.jdbcdsl.mapping.QueryMappingTest.column;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TypeMappingTest {
-    @After
+    @AfterEach
     public void after_each() {
         TypeMapping.typemappers = HashMap.empty();
         TypeMapping.registerDefaults();
@@ -40,9 +41,10 @@ public class TypeMappingTest {
         assertThat(string2).isEqualTo("c");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void should_throw_on_unknown_mapper() {
-        TypeMapping.convert('C', column(Character.class, String.class));
+        assertThatThrownBy(() -> TypeMapping.convert('C', column(Character.class, String.class)))
+                .isExactlyInstanceOf(IllegalStateException.class);
     }
 
     @Test
