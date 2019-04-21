@@ -2,10 +2,7 @@ package no.utgdev.jdbcdsl.where;
 
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.singletonList;
 
 public class WhereIn extends WhereClause {
     private String field;
@@ -26,18 +23,8 @@ public class WhereIn extends WhereClause {
 
     @Override
     public String toSql() {
-        String parameters = objects.stream().map(dummy-> "?").collect(Collectors.joining(","));
+        String parameters = objects.stream().map(dummy -> "?").collect(Collectors.joining(","));
 
-        return String.format("%s %s (%s)",field, WhereOperator.IN.sql, parameters);
-    }
-
-    @Override
-    public boolean appliesTo(String key) {
-        return key.equals(field);
-    }
-
-    @Override
-    public List<String> getFields() {
-        return singletonList(field);
+        return String.format("%s %s (%s)", field, WhereOperator.IN.sql, parameters);
     }
 }

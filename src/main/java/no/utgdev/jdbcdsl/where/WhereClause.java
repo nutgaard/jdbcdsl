@@ -1,9 +1,10 @@
 package no.utgdev.jdbcdsl.where;
 
-import java.util.Collection;
-import java.util.List;
+import no.utgdev.jdbcdsl.SqlFragment;
 
-public abstract class WhereClause {
+import java.util.Collection;
+
+public abstract class WhereClause implements SqlFragment  {
     public static WhereClause equals(String field, Object value) {
         return new ComparativeWhereClause(WhereOperator.EQUALS, field, value);
     }
@@ -43,11 +44,15 @@ public abstract class WhereClause {
         return new LogicalWhereClause(WhereOperator.OR, this, other);
     }
 
-    public abstract Object[] getArgs();
+    public static WhereClause alwaysTrue() {
+        return new ComparativeWhereClause(WhereOperator.EQUALS, "1", "1");
+    }
 
-    public abstract String toSql();
+    public static WhereClause alwaysFalse() {
+        return new ComparativeWhereClause(WhereOperator.NOT_EQUALS, "1", "1");
+    }
 
-    public abstract boolean appliesTo(String key);
-
-    public abstract List<String> getFields();
+    public static WhereClause like(String field, String value) {
+        return new WhereLike(field, value);
+    }
 }

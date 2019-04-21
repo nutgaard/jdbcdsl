@@ -1,7 +1,5 @@
 package no.utgdev.jdbcdsl.where;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 public class LogicalWhereClause extends WhereClause {
@@ -27,17 +25,5 @@ public class LogicalWhereClause extends WhereClause {
     @Override
     public String toSql() {
         return String.format("(%s) %s (%s)", this.wc1.toSql(), this.operator.sql, this.wc2.toSql());
-    }
-
-    @Override
-    public boolean appliesTo(String key) {
-        return wc1.appliesTo(key) || wc2.appliesTo(key);
-    }
-
-    @Override
-    public List<String> getFields() {
-        ArrayList<String> fields = new ArrayList<>(wc1.getFields());
-        fields.addAll(wc2.getFields());
-        return fields;
     }
 }

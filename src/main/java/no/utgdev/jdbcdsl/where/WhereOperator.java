@@ -2,6 +2,7 @@ package no.utgdev.jdbcdsl.where;
 
 public enum WhereOperator {
     EQUALS("="),
+    NOT_EQUALS("!="),
     AND("AND"),
     OR("OR"),
     IN("IN"),

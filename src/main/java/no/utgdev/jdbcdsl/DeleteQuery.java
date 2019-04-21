@@ -2,16 +2,16 @@ package no.utgdev.jdbcdsl;
 
 import lombok.SneakyThrows;
 import no.utgdev.jdbcdsl.where.WhereClause;
-import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Update;
 
 
 public class DeleteQuery {
-    private final Jdbi db;
+    private final Handle db;
     private final String tableName;
     private WhereClause where;
 
-    DeleteQuery(Jdbi db, String tableName) {
+    DeleteQuery(Handle db, String tableName) {
         this.db = db;
         this.tableName = tableName;
     }
@@ -31,13 +31,11 @@ public class DeleteQuery {
         }
 
         String sql = createDeleteStatement();
-        return db.withHandle(handle -> {
-            Update update = handle.createUpdate(sql);
-            if (this.where.getArgs().length > 0) {
-                update.bind(0, this.where.getArgs()[0]);
-            }
-            return update.execute();
-        });
+        Update update = db.createUpdate(sql);
+        if (this.where.getArgs().length > 0) {
+            update.bind(0, this.where.getArgs()[0]);
+        }
+        return update.execute();
     }
 
     private String createDeleteStatement() {

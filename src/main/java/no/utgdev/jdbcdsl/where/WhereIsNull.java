@@ -1,10 +1,6 @@
 package no.utgdev.jdbcdsl.where;
 
 
-import java.util.List;
-
-import static java.util.Collections.singletonList;
-
 public class WhereIsNull extends WhereClause {
     private String field;
 
@@ -25,15 +21,5 @@ public class WhereIsNull extends WhereClause {
     @Override
     public String toSql() {
         return String.format("%s is null", field);
-    }
-
-    @Override
-    public boolean appliesTo(String key) {
-        return key.equals(field);
-    }
-
-    @Override
-    public List<String> getFields() {
-        return singletonList(field);
     }
 }

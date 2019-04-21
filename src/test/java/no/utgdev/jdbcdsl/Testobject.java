@@ -4,13 +4,11 @@ package no.utgdev.jdbcdsl;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.Handle;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import static no.utgdev.jdbcdsl.SqlUtilsTest.*;
 
 
 @Data
@@ -25,59 +23,59 @@ public class Testobject {
 
     public static Testobject mapper(ResultSet rs) throws SQLException {
         return new Testobject()
-                .setBirthday(rs.getTimestamp(BIRTHDAY))
-                .setDead(rs.getBoolean(DEAD))
-                .setId(rs.getString(ID))
-                .setNavn(rs.getString(NAVN))
-                .setNumberOfPets(rs.getInt(NUMBER_OF_PETS));
+                .setBirthday(rs.getTimestamp(SqlUtilsTest.BIRTHDAY))
+                .setDead(rs.getBoolean(SqlUtilsTest.DEAD))
+                .setId(rs.getString(SqlUtilsTest.ID))
+                .setNavn(rs.getString(SqlUtilsTest.NAVN))
+                .setNumberOfPets(rs.getInt(SqlUtilsTest.NUMBER_OF_PETS));
     }
 
     @SneakyThrows
     public static Testobject mapperWithAddress(ResultSet rs) {
         return new Testobject()
-                .setBirthday(rs.getTimestamp(BIRTHDAY))
-                .setDead(rs.getBoolean(DEAD))
-                .setId(rs.getString(ID))
-                .setNavn(rs.getString(NAVN))
-                .setNumberOfPets(rs.getInt(NUMBER_OF_PETS))
-                .setAddress(rs.getString(ADDRESS));
+                .setBirthday(rs.getTimestamp(SqlUtilsTest.BIRTHDAY))
+                .setDead(rs.getBoolean(SqlUtilsTest.DEAD))
+                .setId(rs.getString(SqlUtilsTest.ID))
+                .setNavn(rs.getString(SqlUtilsTest.NAVN))
+                .setNumberOfPets(rs.getInt(SqlUtilsTest.NUMBER_OF_PETS))
+                .setAddress(rs.getString(SqlUtilsTest.ADDRESS));
     }
 
-    public static SelectQuery<Testobject> getSelectWithAddressQuery(Jdbi db, String table) {
+    public static SelectQuery<Testobject> getSelectWithAddressQuery(Handle db, String table) {
         return SqlUtils.select(db, table, Testobject::mapperWithAddress)
-                .column(BIRTHDAY)
-                .column(DEAD)
-                .column(ID)
-                .column(NAVN)
-                .column(NUMBER_OF_PETS)
-                .column(ADDRESS);
+                .column(SqlUtilsTest.BIRTHDAY)
+                .column(SqlUtilsTest.DEAD)
+                .column(SqlUtilsTest.ID)
+                .column(SqlUtilsTest.NAVN)
+                .column(SqlUtilsTest.NUMBER_OF_PETS)
+                .column(SqlUtilsTest.ADDRESS);
     }
 
-    public static SelectQuery<Testobject> getSelectQuery(Jdbi db, String table) {
+    public static SelectQuery<Testobject> getSelectQuery(Handle db, String table) {
         return SqlUtils.select(db, table, Testobject::mapper)
-                .column(BIRTHDAY)
-                .column(DEAD)
-                .column(ID)
-                .column(NAVN)
-                .column(NUMBER_OF_PETS);
+                .column(SqlUtilsTest.BIRTHDAY)
+                .column(SqlUtilsTest.DEAD)
+                .column(SqlUtilsTest.ID)
+                .column(SqlUtilsTest.NAVN)
+                .column(SqlUtilsTest.NUMBER_OF_PETS);
     }
 
-    public InsertQuery toInsertQuery(Jdbi db, String table) {
+    public InsertQuery toInsertQuery(Handle db, String table) {
         return SqlUtils.insert(db, table)
-                .value(BIRTHDAY, birthday)
-                .value(ID, id)
-                .value(DEAD, dead)
-                .value(NUMBER_OF_PETS, numberOfPets)
-                .value(NAVN, navn);
+                .value(SqlUtilsTest.BIRTHDAY, birthday)
+                .value(SqlUtilsTest.ID, id)
+                .value(SqlUtilsTest.DEAD, dead)
+                .value(SqlUtilsTest.NUMBER_OF_PETS, numberOfPets)
+                .value(SqlUtilsTest.NAVN, navn);
     }
 
-    public static InsertBatchQuery<Testobject> getInsertBatchQuery(Jdbi db, String table) {
+    public static InsertBatchQuery<Testobject> getInsertBatchQuery(Handle db, String table) {
         InsertBatchQuery<Testobject> insertBatchQuery = new InsertBatchQuery<>(db, table);
         return insertBatchQuery
-                .add(NAVN, Testobject::getNavn)
-                .add(DEAD, Testobject::isDead)
-                .add(ID, Testobject::getId)
-                .add(BIRTHDAY, Testobject::getBirthday)
-                .add(NUMBER_OF_PETS, Testobject::getNumberOfPets);
+                .add(SqlUtilsTest.NAVN, Testobject::getNavn)
+                .add(SqlUtilsTest.DEAD, Testobject::isDead)
+                .add(SqlUtilsTest.ID, Testobject::getId)
+                .add(SqlUtilsTest.BIRTHDAY, Testobject::getBirthday)
+                .add(SqlUtilsTest.NUMBER_OF_PETS, Testobject::getNumberOfPets);
     }
 }
