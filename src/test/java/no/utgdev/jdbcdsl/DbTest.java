@@ -747,7 +747,7 @@ abstract public class DbTest {
     }
 
     @Test
-    public void skal_gjor_rollback_om_en_try_kommer_fra_withHandle_som_kaster_feil() {
+    public void skal_gjor_rollback_om_en_exception_kommer_fra_withHandle() {
         Testobject object1 = getTestobjectWithId("001");
         Testobject object2 = getTestobjectWithId("002");
 
@@ -769,7 +769,7 @@ abstract public class DbTest {
     }
 
     @Test
-    public void skal_gjor_rollback_om_en_try_kommer_fra_useHandle_som_kaster_feil() {
+    public void skal_gjor_rollback_om_en_exception_kommer_fra_useHandle() {
         Testobject object1 = getTestobjectWithId("001");
         Testobject object2 = getTestobjectWithId("002");
 
