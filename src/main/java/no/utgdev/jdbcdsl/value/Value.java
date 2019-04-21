@@ -25,4 +25,12 @@ public abstract class Value<T> {
     public static Value of(DbConstants value) {
         return new ConstantValue(value);
     }
+
+    public static CastValue<Integer> Int(int value) {
+        return new CastValue<>("INT", value);
+    }
+
+    public static CastValue<String> String(String value) {
+        return new CastValue<>("VARCHAR(" + value.length() + ")", value);
+    }
 }

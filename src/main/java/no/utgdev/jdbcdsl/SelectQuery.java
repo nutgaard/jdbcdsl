@@ -2,38 +2,44 @@ package no.utgdev.jdbcdsl;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
+import io.vavr.collection.List;
 import io.vavr.control.Option;
 import lombok.SneakyThrows;
-import no.utgdev.jdbcdsl.order.OrderClause;
+import no.utgdev.jdbcdsl.order.OrderByExpression;
 import no.utgdev.jdbcdsl.where.WhereClause;
-import org.jdbi.v3.core.Jdbi;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.RowMapper;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 
-
 public class SelectQuery<T> {
-    private Jdbi db;
+    public interface ColumnFragment extends SqlFragment {
+        default AsClause as(String name) {
+            return AsClause.of(this, name);
+        }
+    }
+
+    private Handle db;
     private String tableName;
-    private List<String> columnNames;
+    private List<ColumnFragment> columnNames;
     private Function<ResultSet, T> mapper;
     private WhereClause where;
-    private OrderClause order;
+    private List<OrderByExpression> orderByExpressions;
     private String groupBy;
     private Integer offset;
     private Integer rowCount;
     private Tuple3<String, String, String> leftJoinOn;
 
-    SelectQuery(Jdbi db, String tableName, Function<ResultSet, T> mapper) {
+    SelectQuery(Handle db, String tableName, Function<ResultSet, T> mapper) {
         this.db = db;
         this.tableName = tableName;
-        this.columnNames = new ArrayList<>();
+        this.columnNames = List.empty();
+        this.orderByExpressions = List.empty();
         this.mapper = mapper;
     }
 
@@ -43,7 +49,12 @@ public class SelectQuery<T> {
     }
 
     public SelectQuery<T> column(String columnName) {
-        this.columnNames.add(columnName);
+        this.columnNames = this.columnNames.append(SqlFragment.fromString(columnName));
+        return this;
+    }
+
+    public SelectQuery<T> column(ColumnFragment caseClause) {
+        this.columnNames = this.columnNames.append(caseClause);
         return this;
     }
 
@@ -57,8 +68,8 @@ public class SelectQuery<T> {
         return this;
     }
 
-    public SelectQuery<T> orderBy(OrderClause order) {
-        this.order = order;
+    public SelectQuery<T> orderBy(final OrderByExpression orderByExpression) {
+        this.orderByExpressions = this.orderByExpressions.append(orderByExpression);
         return this;
     }
 
@@ -73,27 +84,26 @@ public class SelectQuery<T> {
     }
 
     @SneakyThrows
-    public T execute() {
-        validate();
-        String sql = createSelectStatement();
+    public Option<T> execute() {
+        Tuple3<String, Object[], RowMapper<T>> context = prepareExecution();
 
-        Object[] args = Option.of(this.where).map(WhereClause::getArgs).getOrElse(new Object[]{});
-
-        RowMapper<T> mapper = (rs, rowNum) -> this.mapper.apply(rs);
-
-        return db.withHandle(handle -> handle.select(sql, args).map(mapper).findFirst().orElse(null));
+        return Option.ofOptional(db.select(context._1, context._2).map(context._3).findFirst());
     }
 
     @SneakyThrows
-    public List<T> executeToList() {
+    public java.util.List<T> executeToList() {
+        Tuple3<String, Object[], RowMapper<T>> context = prepareExecution();
+
+        return db.select(context._1, context._2).map(context._3).list();
+    }
+
+    private Tuple3<String, Object[], RowMapper<T>> prepareExecution() {
         validate();
-        String sql = createSelectStatement();
-
-        Object[] args = Option.of(this.where).map(WhereClause::getArgs).getOrElse(new Object[]{});
-
-        RowMapper<T> mapper = (rs, rowNum) -> this.mapper.apply(rs);
-
-        return db.withHandle(handle -> handle.select(sql, args).map(mapper).list());
+        return Tuple.of(
+                createSelectStatement(),
+                createObjectArgs(),
+                (rs, rowNum) -> this.mapper.apply(rs)
+        );
     }
 
     private void validate() {
@@ -104,7 +114,13 @@ public class SelectQuery<T> {
             );
         }
 
-        if (groupBy != null && !columnNames.contains(groupBy)) {
+        boolean hasSelectOnGroupBy = columnNames
+                .find((fragment) -> fragment instanceof SqlFragment.StringFragment && fragment.toSql().equals(groupBy) ||
+                                fragment instanceof AsClause && ((AsClause)fragment).getName().equals(groupBy)
+                        )
+                .isDefined();
+
+        if (groupBy != null && !hasSelectOnGroupBy) {
             throw new SqlUtilsException("You have to select the column which you are grouping by.");
         }
 
@@ -113,11 +129,24 @@ public class SelectQuery<T> {
         }
     }
 
+    private Object[] createObjectArgs() {
+        Object[] columnArgs = this.columnNames
+                .map(ColumnFragment::getArgs)
+                .reduce(ArrayUtils::addAll);
+
+        Object[] whereArgs = Option.of(this.where).map(WhereClause::getArgs).getOrElse(new Object[]{});
+
+        return ArrayUtils.addAll(columnArgs, whereArgs);
+    }
+
     private String createSelectStatement() {
         StringBuilder sqlBuilder = new StringBuilder()
                 .append("SELECT ");
 
-        columnNames.stream()
+        columnNames
+                .toJavaList()
+                .stream()
+                .map(SqlFragment::toSql)
                 .flatMap(x -> Stream.of(", ", x))
                 .skip(1)
                 .forEach(sqlBuilder::append);
@@ -147,8 +176,14 @@ public class SelectQuery<T> {
             sqlBuilder.append(" GROUP BY ").append(this.groupBy);
         }
 
-        if (this.order != null) {
-            sqlBuilder.append(this.order.toSql());
+        if (orderByExpressions != null && !orderByExpressions.isEmpty()) {
+            sqlBuilder.append(" ORDER BY ");
+            orderByExpressions
+                    .toJavaList()
+                    .stream()
+                    .flatMap(orderByExpression -> Stream.of(", ", orderByExpression.toSql()))
+                    .skip(1)
+                    .forEach(sqlBuilder::append);
         }
 
         if (this.offset != null) {

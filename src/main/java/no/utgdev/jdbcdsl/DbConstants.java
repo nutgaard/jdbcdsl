@@ -13,6 +13,12 @@ public enum DbConstants {
     }
 
     public static ConstantValue nextSeq(String seq) {
-        return new ConstantValue(String.format("%s.NEXTVAL", seq));
+        if (SqlUtils.db == SqlUtils.DbSupport.ORACLE) {
+            return new ConstantValue(String.format("%s.NEXTVAL", seq)); // Oracle
+        } else if (SqlUtils.db == SqlUtils.DbSupport.MSSQL) {
+            return new ConstantValue(String.format("NEXT VALUE FOR %s", seq)); // MS Sql
+        } else {
+            return new ConstantValue(String.format("%s.NEXTVAL", seq));
+        }
     }
 }

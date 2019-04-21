@@ -1,20 +1,17 @@
 package no.utgdev.jdbcdsl;
 
 import no.utgdev.jdbcdsl.value.Value;
-import org.apache.commons.lang3.StringUtils;
-import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.Handle;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
-
 public class InsertQuery implements DatachangeingQuery<InsertQuery>{
-    private final Jdbi db;
+    private final Handle db;
     private final String tableName;
     private final Map<String, Value> insertParams;
 
-    public InsertQuery(Jdbi db, String tableName) {
+    public InsertQuery(Handle db, String tableName) {
         this.db = db;
         this.tableName = tableName;
         this.insertParams = new LinkedHashMap<>();
@@ -37,31 +34,19 @@ public class InsertQuery implements DatachangeingQuery<InsertQuery>{
     }
 
     public int execute() {
-        String sql = createSqlStatement();
-        Object[] args = insertParams.values()
+        String sql = Helpers.createInsertSqlStatement(this.tableName, this.insertParams);
+        Object[] args = insertParams
+                .values()
                 .stream()
                 .filter(Value::hasPlaceholder)
                 .map(Value::getSql)
                 .toArray();
 
 
-        return db.withHandle(handle -> handle.execute(sql, args));
-    }
-
-    private String createSqlStatement() {
-        String columns = StringUtils.join(insertParams.keySet(), ",");
-
-        String values = insertParams
-                .values()
-                .stream()
-                .map(Value::getValuePlaceholder)
-                .collect(joining(","));
-
-
-        return String.format("insert into %s (%s) values (%s)", tableName, columns, values);
+        return db.execute(sql, args);
     }
 
     public String toString() {
-        return createSqlStatement();
+        return Helpers.createInsertSqlStatement(this.tableName, this.insertParams);
     }
 }

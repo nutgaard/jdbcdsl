@@ -1,23 +1,22 @@
 package no.utgdev.jdbcdsl;
 
 import no.utgdev.jdbcdsl.value.Value;
-import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.Handle;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class UpdateQuery implements DatachangeingQuery<UpdateQuery> {
-    private final Jdbi db;
+    private final Handle db;
     private final String tableName;
     private final Map<String, Value> setParams;
     private String whereParam;
     private Object whereValue;
 
-    public UpdateQuery(Jdbi db, String tableName) {
+    public UpdateQuery(Handle db, String tableName) {
         this.db = db;
         this.tableName = tableName;
         this.setParams = new LinkedHashMap<>();
@@ -53,14 +52,14 @@ public class UpdateQuery implements DatachangeingQuery<UpdateQuery> {
 
         StringBuilder sqlBuilder = new StringBuilder()
                 .append("update ").append(tableName)
-                .append(createSetStatement());
+                .append(Helpers.createSetStatement(this.setParams));
 
         if (this.whereParam != null) {
             sqlBuilder.append(" where ").append(whereParam).append(" = ?");
         }
 
         String sql = sqlBuilder.toString();
-        return db.withHandle(handle -> handle.execute(sql, createSqlArgumentArray()));
+        return db.execute(sql, createSqlArgumentArray());
     }
 
     private Object[] createSqlArgumentArray() {
@@ -76,12 +75,6 @@ public class UpdateQuery implements DatachangeingQuery<UpdateQuery> {
         }
 
         return args.toArray();
-    }
-
-    private String createSetStatement() {
-        return " set " + setParams.entrySet().stream()
-                .map(entry -> entry.getKey() + " = " + entry.getValue().getValuePlaceholder())
-                .collect(joining(", "));
     }
 
 }

@@ -8,7 +8,9 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import lombok.Value;
-import no.utgdev.jdbcdsl.*;
+import no.utgdev.jdbcdsl.DatachangeingQuery;
+import no.utgdev.jdbcdsl.SelectQuery;
+import no.utgdev.jdbcdsl.UpdateBatchQuery;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
