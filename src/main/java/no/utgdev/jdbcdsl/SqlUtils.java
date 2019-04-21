@@ -16,6 +16,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SqlUtils {
+    public enum DbSupport {
+        UNKNOWN, MSSQL, ORACLE
+    }
+
+    public static DbSupport db = DbSupport.UNKNOWN;
     private static final ThreadLocal<Boolean> runInTransaction = ThreadLocal.withInitial(() -> false);
     private static final ThreadLocal<Throwable> markedForRollback = ThreadLocal.withInitial(() -> null);
     private static final ThreadLocal<Handle> transactionHandle = ThreadLocal.withInitial(() -> null);

@@ -26,7 +26,7 @@ import static no.utgdev.jdbcdsl.CaseClause.WhenClause.when;
 import static no.utgdev.jdbcdsl.value.Value.Int;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SqlUtilsTest {
+abstract public class DbTest {
 
     public final static String TESTTABLE1 = "TESTTABLE1";
     public final static String TESTTABLE2 = "TESTTABLE2";
@@ -38,11 +38,10 @@ public class SqlUtilsTest {
     public final static String ADDRESS = "ADDRESS";
     public final static String TEST_ID_SEQ = "TEST_ID_SEQ";
 
-    private Jdbi db;
+    protected Jdbi db;
 
     @Before
     public void setup() {
-        db = TestUtils.jdbcTemplate();
         db.useHandle(handle -> {
             Batch batch = handle.createBatch();
             batch.add("CREATE TABLE TESTTABLE1 (\n" +
@@ -234,15 +233,15 @@ public class SqlUtilsTest {
             getTestobjectWithId("001").toInsertQuery(handle, TESTTABLE1).execute();
 
             return SqlUtils.select(handle, TESTTABLE1, TestUtils::dump)
-                    .column(SqlUtilsTest.ID)
-                    .column(SqlUtilsTest.BIRTHDAY)
-                    .column(SqlFragment.fromString(SqlUtilsTest.BIRTHDAY).as("STARTOFLIFE"))
+                    .column(DbTest.ID)
+                    .column(DbTest.BIRTHDAY)
+                    .column(SqlFragment.fromString(DbTest.BIRTHDAY).as("STARTOFLIFE"))
                     .executeToList();
         });
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).get(SqlUtilsTest.ID)).isEqualTo("001");
-        assertThat(result.get(0).get("STARTOFLIFE")).isEqualTo(result.get(0).get(SqlUtilsTest.BIRTHDAY));
+        assertThat(result.get(0).get(DbTest.ID)).isEqualTo("001");
+        assertThat(result.get(0).get("STARTOFLIFE")).isEqualTo(result.get(0).get(DbTest.BIRTHDAY));
     }
 
     @Test
@@ -254,15 +253,15 @@ public class SqlUtilsTest {
             getTestobjectWithId("003").toInsertQuery(handle, TESTTABLE1).execute();
 
             return SqlUtils.select(handle, TESTTABLE1, TestUtils::dump)
-                    .column(SqlUtilsTest.BIRTHDAY)
-                    .column(SqlUtilsTest.DEAD)
-                    .column(SqlUtilsTest.ID)
-                    .column(SqlUtilsTest.NAVN)
-                    .column(SqlUtilsTest.NUMBER_OF_PETS)
+                    .column(DbTest.BIRTHDAY)
+                    .column(DbTest.DEAD)
+                    .column(DbTest.ID)
+                    .column(DbTest.NAVN)
+                    .column(DbTest.NUMBER_OF_PETS)
                     .column(CaseClause.of(
-                            when(WhereClause.like(SqlUtilsTest.ID, "%1"), Int(3)),
-                            when(WhereClause.like(SqlUtilsTest.ID, "%2"), Int(2)),
-                            when(WhereClause.like(SqlUtilsTest.ID, "%3"), Int(1)),
+                            when(WhereClause.like(DbTest.ID, "%1"), Int(3)),
+                            when(WhereClause.like(DbTest.ID, "%2"), Int(2)),
+                            when(WhereClause.like(DbTest.ID, "%3"), Int(1)),
                             orElse(Int(0))
                     ).as("matchScore"))
                     .orderBy(OrderByExpression.asc("matchScore"))
@@ -270,9 +269,9 @@ public class SqlUtilsTest {
         });
 
         assertThat(result).hasSize(3);
-        assertThat(result.get(0).get(SqlUtilsTest.ID)).isEqualTo("003");
-        assertThat(result.get(1).get(SqlUtilsTest.ID)).isEqualTo("002");
-        assertThat(result.get(2).get(SqlUtilsTest.ID)).isEqualTo("001");
+        assertThat(result.get(0).get(DbTest.ID)).isEqualTo("003");
+        assertThat(result.get(1).get(DbTest.ID)).isEqualTo("002");
+        assertThat(result.get(2).get(DbTest.ID)).isEqualTo("001");
     }
 
     @Test
@@ -826,11 +825,11 @@ public class SqlUtilsTest {
     @Test
     public void feil_i_nosted_transaksjon_skal_propagere_til_toppen() {
         Try<Integer> transaction = Try.of(() -> SqlUtils.transactional(() ->
-            SqlUtils.transactional(() ->
-                    SqlUtils.transactional(() -> {
-                        throw new RuntimeException("Det skjedde en feil");
-                    })
-            )
+                SqlUtils.transactional(() ->
+                        SqlUtils.transactional(() -> {
+                            throw new RuntimeException("Det skjedde en feil");
+                        })
+                )
         ));
 
         assertThat(transaction.isFailure()).isTrue();
@@ -928,3 +927,4 @@ public class SqlUtilsTest {
         }
     }
 }
+
